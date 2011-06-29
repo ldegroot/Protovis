@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<title>Column chart</title>
+	<script src="http://multimedia.journalism.berkeley.edu/media/js/protovis/protovis-r3.2.js" type="text/javascript"></script> 
+
+</head>
+<body>
+                                                                
+
+<script type="text/javascript+protovis">
+
+/* edit/input your data */
+var data = [
+	{"Date":"Midnight","barData":18}, // edit values that follow the ":"
+	{"Date":1,"barData":32},
+	{"Date":2,"barData":17},
+	{"Date":3,"barData":3},
+	{"Date":4,"barData":2},
+	{"Date":5,"barData":7},
+	{"Date":6,"barData":13},
+	{"Date":7,"barData":41},
+	{"Date":8,"barData":89},
+	{"Date":9,"barData":76},
+	{"Date":10,"barData":59},
+	{"Date":11,"barData":43},
+	{"Date":"Noon","barData":68},
+	{"Date":13,"barData":69},
+	{"Date":14,"barData":75},
+	{"Date":15,"barData":72},
+	{"Date":16,"barData":83},
+	{"Date":17,"barData":81},
+	{"Date":18,"barData":108},
+	{"Date":19,"barData":60},
+	{"Date":20,"barData":38},
+	{"Date":21,"barData":41},
+	{"Date":22,"barData":37},
+	{"Date":23,"barData":39}  // no comma on the last value
+	];
+	
+
+/* edit these settings freely */
+var w = 300, // width of the panel
+	h = 400, // height of the panel
+	topMargin = 15, // these four settings position your chart in the panel
+	bottomMargin = 15,
+	leftMargin = 40,
+	rightMargin = 30,
+	gap = 3, // changes space between bars
+	baseColor = "#a7b6c1", // use hexadecimal colors or web colors e.g. "black"
+	highlightColor = "#a14538",
+	tickLineColor = "#d6d8da",
+	dataRange = 120, // change to just above the upper extent of your data
+	increments = 20, // change to adjust spacing in tick lines
+	dataText = "bold 8pt Arial,sans-serif", // adjust font settings of labels
+	tickText = "bold 6pt Arial,sans-serif",
+	dateText = "7pt Arial,sans-serif"; 
+
+	
+/* edit with care */
+var chartWidth = w-leftMargin-rightMargin,
+	chartHeight = h-topMargin-bottomMargin,
+ 	yScale = pv.Scale.linear(0, data.length).range(0, chartHeight),
+	total = pv.Scale.linear(0, dataRange).range(0, chartWidth),
+	barWidth = chartHeight/data.length,
+	commas = pv.Format.number(),	
+	activeBar = -1;	
+	
+/* main panel */	
+var vis = new pv.Panel().width(w).height(h)
+	.event("mousemove", pv.Behavior.point(Infinity).collapse("x"));
+	
+	/* tick marks */
+   	vis.add(pv.Rule)
+		.data(pv.range(0, dataRange, increments))
+		.left(function(d) (dataRange > chartWidth) ? (d / (dataRange/chartWidth)) + leftMargin : (d * (chartWidth)/dataRange) + leftMargin)
+		.top(topMargin)
+		.bottom(bottomMargin)
+		.strokeStyle(tickLineColor)
+		.add(pv.Label)
+		.textAlign("center")
+		.textBaseline("bottom")
+		.font(tickText)
+		.textStyle("gray");
+	 		  
+	/* bars and data labels	 */
+	vis.add(pv.Bar)                         
+		.data(data)
+		.top(function() 1 + yScale(this.index)+topMargin)         
+		.width(function(d) total(d.barData))  
+		.height(barWidth-gap)                          
+		.left(leftMargin)
+		.lineWidth(.2)
+		.strokeStyle("333")
+		.event("point", function() {activeBar = this.index; return vis;})
+		.fillStyle(function() (activeBar == this.index) ? highlightColor : baseColor) 
+		.anchor("right")
+		.add(pv.Label)
+		.textAlign("left")
+		.text(function(d) d.barData)
+		.font(dataText)
+		.textStyle(function() (activeBar == this.index) ? "black" : "transparent");
+
+	   /* date labels */
+	vis.add(pv.Bar)
+		.data(data) 
+		.top(function() 1 + yScale(this.index) + topMargin) 
+		.left(leftMargin)
+		.height(barWidth-gap)
+		.fillStyle(null)
+		.anchor("left")                 
+		.add(pv.Label)                                     
+		.text(function(d) d.Date)
+		.textAlign("right")
+		.font(dateText)
+		.textStyle("#333333"); 
+					
+	/* animation panel */
+	vis.add(pv.Panel)
+		.events("all") 
+		.event("point", function() {activeBar = this.index; return vis;});
+	 
+	vis.render();
+</script>
+
+</body>
+</html>

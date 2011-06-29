@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<title>Pyramid chart</title>
+	<script src="http://multimedia.journalism.berkeley.edu/media/js/protovis/protovis-r3.2.js" type="text/javascript"></script>
+
+</head>
+
+<body>
+
+<script type="text/javascript+protovis">
+
+/* edit/input your data */
+var data = [
+    {"sharedLabel" : "Category 1", "barData1" : 43041, "barData2" : 40852},
+    {"sharedLabel" : "Category 2", "barData1" : 38867, "barData2" : 36296},
+    {"sharedLabel" : "Category 3", "barData1" : 41748, "barData2" : 40757},
+    {"sharedLabel" : "Category 4", "barData1" : 24831, "barData2" : 23624},
+    {"sharedLabel" : "Category 5", "barData1" : 15764, "barData2" : 15299},
+    {"sharedLabel" : "Category 6", "barData1" : 17006, "barData2" : 16071},
+    {"sharedLabel" : "Category 7", "barData1" : 24309, "barData2" : 23235},
+    {"sharedLabel" : "Category 8", "barData1" : 46756, "barData2" : 46065},
+    {"sharedLabel" : "Category 9", "barData1" : 41923, "barData2" : 41704},
+    {"sharedLabel" : "Category 10", "barData1" : 42565, "barData2" : 42159},
+    {"sharedLabel" : "Category 11", "barData1" : 44316, "barData2" : 45468},
+    {"sharedLabel" : "Category 12", "barData1" : 42975, "barData2" : 44223},
+    {"sharedLabel" : "Category 13", "barData1" : 36755, "barData2" : 39452},
+    {"sharedLabel" : "Category 14", "barData1" : 31578, "barData2" : 34063},
+    {"sharedLabel" : "Category 15", "barData1" : 10328, "barData2" : 11799},
+    {"sharedLabel" : "Category 16", "barData1" : 13917, "barData2" : 14949},
+    {"sharedLabel" : "Category 17", "barData1" : 7920, "barData2" : 8589},
+    {"sharedLabel" : "Category 18", "barData1" : 9003, "barData2" : 10397},
+    {"sharedLabel" : "Category 19", "barData1" : 14322, "barData2" : 16832},
+    {"sharedLabel" : "Category 20", "barData1" : 12369, "barData2" : 15836},
+    {"sharedLabel" : "Category 21", "barData1" : 8710, "barData2" : 12377},
+    {"sharedLabel" : "Category 22", "barData1" : 5853, "barData2" : 12213} // no comma on the last value
+  ]
+;
+
+/* edit these settings freely */	
+var w = 600, // width of the panel
+	h = 400, // height of the panel
+	topMargin = 15
+	labelSpace = 40// these four settings position your chart in the panel
+	innerMargin = w/2+labelSpace,
+	outerMargin = 15,
+	gap = 2, // changes space between bars
+	baseColor = "#a7b6c1", // use hexadecimal colors or web colors e.g. highlightColor
+	highlightColor = "#a14538",
+	dataRange = 120000, // change to just above the upper extent of your data * 2
+	dataText = "bold 8pt Arial,sans-serif", // adjust font settings of labels
+	leftLabel = "Left label",
+	rightLabel = "Right label",
+	labelText = "bold 8pt Arial,sans-serif",
+	categoryText = "8pt Arial,sans-serif";
+
+/* edit with care */
+var chartWidth = (w-innerMargin-outerMargin)*2,
+	barWidth = (h)/data.length,
+	yScale = pv.Scale.linear(0, data.length).range(0, h-topMargin),
+	total = pv.Scale.linear(0, dataRange).range(0,chartWidth),
+	commas = pv.Format.number(),
+	activeBar = -1;
+
+/* main panel */
+var vis = new pv.Panel().width(w).height(h)
+	.event("mousemove", pv.Behavior.point(Infinity).collapse("x"));
+	
+	/* barData1 label */
+	vis.add(pv.Label)
+		.data([leftLabel])
+		.top(topMargin-3)
+		.left(w-innerMargin) 
+		.textAlign("right")		
+		.font(labelText);
+		
+	/* barData2 label */
+	vis.add(pv.Label)
+		.data([rightLabel])
+		.top(topMargin-3)
+		.left(innerMargin) 
+		.font(labelText);
+			
+	/* female bars and data labels */	
+	vis.add(pv.Bar)
+		.data(data)
+		.top(function() yScale(this.index)+topMargin)
+		.width(function(d) total(d.barData2))
+		.height(barWidth-gap)
+		.right(innerMargin)
+		.event("point", function() {activeBar = this.index; return vis;})
+		.fillStyle(function() (activeBar == this.index) ? highlightColor : baseColor) 
+		.anchor("left")
+		.add(pv.Label)
+		.textAlign("right")
+		.text(function(d) commas(d.barData2))
+		.font(dataText)
+		.textStyle(function() (activeBar == this.index) ? "black" : "transparent");
+		
+	// male bars and data labels	
+	vis.add(pv.Bar)
+		.data(data)
+		.top(function() yScale(this.index)+topMargin)
+		.width(function(d) total(d.barData1))
+		.height(barWidth-gap)
+		.left(innerMargin)
+		.event("point", function() {activeBar = this.index; return vis;})
+		.fillStyle(function() (activeBar == this.index) ? highlightColor : baseColor) 
+		.anchor("right")
+		.add(pv.Label)
+		.textAlign("left")
+		.text(function(d) commas(d.barData1))
+		.font(dataText)
+		.textStyle(function() (activeBar == this.index) ? "black" : "transparent");
+			
+	/* sharedLabels */
+	vis.add(pv.Bar)
+		.data(data)
+		.top(function() yScale(this.index)+topMargin)
+		.height(barWidth-gap)
+		.left(w/2)
+		.fillStyle(null)
+		.event("point", function() {activeBar = this.index; return vis;})
+		.anchor("right")
+		.add(pv.Label)
+		.text(function(d) d.sharedLabel)
+		.left(w/2)
+		.textAlign("center")
+		.font(categoryText)
+		.textStyle(function() (activeBar == this.index) ? "black" : "gray");		
+
+	// animation panel
+	vis.add(pv.Panel)
+		.events("all") 
+		.event("point", function() {activeBar = this.index; return vis;});
+
+	vis.render();	 
+	
+</script>
+
+</body>
+</html>
